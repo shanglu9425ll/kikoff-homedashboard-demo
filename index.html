@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kikoff – Feature Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .phone {
+      width: 375px;
+      height: 780px;
+      background: #ffffff;
+      border-radius: 40px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111;
+      flex-shrink: 0;
+    }
+    .status-bar .time { font-size: 15px; font-weight: 700; }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+
+    /* Header */
+    .header {
+      padding: 8px 20px 0;
+      flex-shrink: 0;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: -0.5px;
+    }
+    .avatar {
+      width: 36px; height: 36px;
+      background: #f0f0f0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: none;
+      background: #f0f0f0;
+      color: #888;
+      flex-shrink: 0;
+    }
+    .tab.active {
+      background: #111;
+      color: #fff;
+    }
+
+    /* Screens container */
+    .screens-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .screens {
+      display: flex;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .screen {
+      min-width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: none;
+      padding: 20px 20px 32px;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+
+    /* ── CREDIT ACCOUNT ── */
+    .credit-card {
+      background: #fff;
+      border: 1.5px solid #ebebeb;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .credit-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .credit-score-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .credit-score {
+      font-size: 52px;
+      font-weight: 800;
+      color: #111;
+      line-height: 1;
+    }
+    .score-badge {
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .credit-sub {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .credit-reporting {
+      font-size: 12px;
+      color: #555;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .autopay-tag {
+      display: inline-block;
+      color: #ff1493;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fff0f7;
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    /* Score gauge */
+    .gauge-wrap {
+      margin: 16px 0 20px;
+      text-align: center;
+    }
+    .gauge-track {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, #ff5252 0%, #ffb300 40%, #66bb6a 100%);
+      border-radius: 6px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .gauge-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      background: #fff;
+      border: 3px solid #111;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      left: 51%;
+    }
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #aaa;
+    }
+    /* Payment timeline */
+    .timeline-label {
+      font-size: 11px;
+      color: #aaa;
+      font-weight: 600;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .tl-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .tl-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+    .tl-dot.paid { background: #e8f5e9; color: #2e7d32; }
+    .tl-dot.upcoming { background: #fff0f7; color: #ff1493; border: 2px dashed #ff1493; }
+    .tl-dot.future { background: #f5f5f5; color: #ccc; }
+    .tl-month { font-size: 10px; color: #aaa; font-weight: 500; }
+    /* CTA buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-outline {
+      flex: 1;
+      padding: 13px;
+      border: 1.5px solid #ddd;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      background: #fff;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-primary {
+      flex: 1.4;
+      padding: 13px;
+      background: #111;
+      color: #fff;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+    }
+    /* Progress card */
+    .progress-card {
+      background: linear-gradient(135deg, #111 0%, #333 100%);
+      border-radius: 20px;
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .progress-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+    .progress-card-score {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      height: 6px;
+      margin-bottom: 6px;
+    }
+    .progress-bar-fill {
+      height: 6px;
+      background: #ff1493;
+      border-radius: 6px;
+      width: 58%;
+    }
+    .progress-meta {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    /* ── RENT REPORTING ── */
+    .illustration-wrap {
+      text-align: center;
+      margin: 10px 0 20px;
+    }
+    .screen-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111;
+      text-align: center;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .screen-sub {
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      padding: 0 10px;
+    }
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fafafa;
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .feature-icon.pink { background: #fff0f7; }
+    .feature-icon.blue { background: #f0f4ff; }
+    .feature-icon.green { background: #f0faf0; }
+    .feature-icon.yellow { background: #fffbf0; }
+    .feature-icon.purple { background: #f5f0ff; }
+    .feature-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 2px;
+    }
+    .feature-text p {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.4;
+    }
+    .btn-full {
+      width: 100%;
+      padding: 16px;
+      background: #ff1493;
+      color: #fff;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+    .btn-full:active { opacity: 0.85; }
+    .trust-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-direction: column;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #555;
+      font-weight: 500;
+    }
+    .trust-dot { color: #ff1493; font-size: 14px; }
+
+    /* Info chip */
+    .info-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0faf0;
+      color: #2e7d32;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* Bills grid */
+    .bills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .bill-card {
+      background: #fafafa;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bill-card-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+    .bill-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+    }
+    .bill-card p {
+      font-size: 11px;
+      color: #888;
+    }
+    .bill-card .status {
+      font-size: 10px;
+      font-weight: 700;
+      color: #2e7d32;
+      background: #e8f5e9;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    /* Dispute */
+    .dispute-card {
+      background: #fafafa;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .dispute-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: #fff0f7;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .dispute-icon.alert { background: #fff8e1; }
+    .dispute-icon.check { background: #e8f5e9; }
+    .dispute-content h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 3px;
+    }
+    .dispute-content p {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.4;
+    }
+    .dispute-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+    .dispute-tag.open { background: #fff0f7; color: #ff1493; }
+    .dispute-tag.review { background: #fff8e1; color: #f57c00; }
+    .dispute-tag.resolved { background: #e8f5e9; color: #2e7d32; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      margin-top: 4px;
+    }
+
+    /* Swipe hint */
+    .swipe-hint {
+      text-align: center;
+      font-size: 11px;
+      color: #ccc;
+      padding: 6px 0 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* Bottom dots */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 0 16px;
+      flex-shrink: 0;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ddd;
+      transition: all 0.3s ease;
+    }
+    .dot.active {
+      background: #111;
+      width: 18px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <div class="status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <rect x="0" y="3" width="3" height="9" rx="1" fill="#111"/>
+        <rect x="4.5" y="2" width="3" height="10" rx="1" fill="#111"/>
+        <rect x="9" y="0" width="3" height="12" rx="1" fill="#111"/>
+        <rect x="13.5" y="0" width="2.5" height="12" rx="1" fill="#ddd"/>
+      </svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="#111">
+        <path d="M8 2.5C10.5 2.5 12.7 3.6 14.2 5.3L15.5 4C13.6 1.9 11 0.5 8 0.5C5 0.5 2.4 1.9 0.5 4L1.8 5.3C3.3 3.6 5.5 2.5 8 2.5Z"/>
+        <path d="M8 5.5C9.7 5.5 11.2 6.2 12.3 7.4L13.6 6.1C12.1 4.5 10.2 3.5 8 3.5C5.8 3.5 3.9 4.5 2.4 6.1L3.7 7.4C4.8 6.2 6.3 5.5 8 5.5Z"/>
+        <circle cx="8" cy="10" r="2"/>
+      </svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#111" stroke-opacity="0.35"/>
+        <rect x="2" y="2" width="16" height="8" rx="2" fill="#111"/>
+        <path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6C24.5 5.5 23.8 4.8 23 4.5Z" fill="#111" fill-opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <span class="logo">kikoff</span>
+      <div class="avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="switchTab(0)">Credit Account</button>
+    <button class="tab" onclick="switchTab(1)">Rent Reporting</button>
+    <button class="tab" onclick="switchTab(2)">Bill Reporting</button>
+    <button class="tab" onclick="switchTab(3)">Dispute Center</button>
+  </div>
+
+  <!-- Screens -->
+  <div class="screens-wrapper">
+    <div class="screens" id="screens">
+
+      <!-- SCREEN 1: Credit Account -->
+      <div class="screen">
+        <div class="credit-card">
+          <div class="credit-label">Credit Score</div>
+          <div class="credit-score-row">
+            <div class="credit-score">580</div>
+            <div class="score-badge">↑ +12 pts</div>
+          </div>
+          <div class="credit-reporting">Kikoff Credit Account · Reporting to 3 bureaus</div>
+          <div class="autopay-tag">⏰ Upcoming autopay in 3 days</div>
+          <div class="gauge-track">
+            <div class="gauge-thumb"></div>
+          </div>
+          <div class="gauge-labels">
+            <span>300 Poor</span>
+            <span>580 Fair</span>
+            <span>850 Excellent</span>
+          </div>
+          <div style="margin-top:18px;">
+            <div class="timeline-label">Payment History</div>
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot paid">✓</div>
+                <div class="tl-month">Jan</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot paid">✓</div>
+                <div class="tl-month">Feb</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot paid">✓</div>
+                <div class="tl-month">Mar</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot paid">✓</div>
+                <div class="tl-month">Apr</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot paid">✓</div>
+                <div class="tl-month">May</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot upcoming">→</div>
+                <div class="tl-month">Jun</div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <div class="btn-outline">Pay in advance</div>
+            <div class="btn-primary">Turn on autopay</div>
+          </div>
+        </div>
+        <div class="progress-card">
+          <div class="progress-card-title">YOUR GOAL</div>
+          <div class="progress-card-score">Score 700+ 🎯</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill"></div>
+          </div>
+          <div class="progress-meta">58% of the way there · Keep paying on time!</div>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: Rent Reporting -->
+      <div class="screen">
+        <div class="illustration-wrap">
+          <svg width="180" height="140" viewBox="0 0 180 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky -->
+            <rect width="180" height="140" rx="16" fill="#f8f4ff"/>
+            <!-- Sun -->
+            <circle cx="150" cy="30" r="18" fill="#FFE566" opacity="0.7"/>
+            <!-- Clouds -->
+            <ellipse cx="40" cy="25" rx="22" ry="10" fill="#fff" opacity="0.8"/>
+            <ellipse cx="58" cy="22" rx="16" ry="10" fill="#fff" opacity="0.8"/>
+            <!-- Ground -->
+            <rect x="0" y="110" width="180" height="30" rx="0" fill="#e8e0ff" opacity="0.5"/>
+            <!-- House body -->
+            <rect x="50" y="65" width="80" height="55" rx="4" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <!-- Roof -->
+            <polygon points="40,68 90,30 140,68" fill="#c4b0f5"/>
+            <polygon points="40,68 90,30 140,68" fill="none" stroke="#a890e8" stroke-width="1.5"/>
+            <!-- Chimney -->
+            <rect x="110" y="38" width="12" height="22" rx="2" fill="#a890e8"/>
+            <!-- Door -->
+            <rect x="78" y="88" width="24" height="32" rx="4" fill="#f0ebff"/>
+            <circle cx="98" cy="104" r="2" fill="#a890e8"/>
+            <!-- Windows -->
+            <rect x="56" y="76" width="18" height="16" rx="3" fill="#f0ebff" stroke="#ddd" stroke-width="1"/>
+            <line x1="65" y1="76" x2="65" y2="92" stroke="#ddd" stroke-width="1"/>
+            <line x1="56" y1="84" x2="74" y2="84" stroke="#ddd" stroke-width="1"/>
+            <rect x="106" y="76" width="18" height="16" rx="3" fill="#f0ebff" stroke="#ddd" stroke-width="1"/>
+            <line x1="115" y1="76" x2="115" y2="92" stroke="#ddd" stroke-width="1"/>
+            <line x1="106" y1="84" x2="124" y2="84" stroke="#ddd" stroke-width="1"/>
+            <!-- Checkmark badge -->
+            <circle cx="148" cy="100" r="18" fill="#ff1493"/>
+            <path d="M140 100 L146 106 L156 94" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div style="text-align:center; margin-bottom:10px;">
+          <span class="info-chip">✓ Reports to all 3 bureaus</span>
+        </div>
+        <div class="screen-title">Build Credit<br/>with Your Rent</div>
+        <div class="screen-sub">Your on-time rent payments deserve credit. We report them automatically — no landlord needed.</div>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon pink">🏠</div>
+            <div class="feature-text">
+              <h4>Link your rent payments</h4>
+              <p>Connect your bank or payment app in seconds</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon blue">📊</div>
+            <div class="feature-text">
+              <h4>Automatic reporting</h4>
+              <p>We report to Equifax, Experian & TransUnion monthly</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon green">⚡</div>
+            <div class="feature-text">
+              <h4>See results fast</h4>
+              <p>Most users see score improvements within 30 days</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-full">Get Started — $0 Setup</button>
+        <div class="trust-row">
+          <div class="trust-item"><span class="trust-dot">✓</span> Trusted by 500K+ renters</div>
+          <div class="trust-item"><span class="trust-dot">✓</span> Starting from $5/month</div>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: Bill Reporting -->
+      <div class="screen">
+        <div class="illustration-wrap">
+          <svg width="180" height="130" viewBox="0 0 180 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="180" height="130" rx="16" fill="#f0faf8"/>
+            <!-- Phone bill card -->
+            <rect x="20" y="20" width="65" height="80" rx="10" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+            <rect x="30" y="32" width="45" height="5" rx="2.5" fill="#eee"/>
+            <rect x="30" y="42" width="30" height="4" rx="2" fill="#f0f0f0"/>
+            <text x="47" y="70" font-size="11" font-weight="700" fill="#111" text-anchor="middle" font-family="sans-serif">📱 Phone</text>
+            <rect x="30" y="78" width="45" height="12" rx="6" fill="#ff1493"/>
+            <text x="52" y="88" font-size="8" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">REPORTED</text>
+            <!-- Utility card -->
+            <rect x="95" y="14" width="65" height="80" rx="10" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+            <rect x="105" y="26" width="45" height="5" rx="2.5" fill="#eee"/>
+            <rect x="105" y="36" width="30" height="4" rx="2" fill="#f0f0f0"/>
+            <text x="127" y="64" font-size="11" font-weight="700" fill="#111" text-anchor="middle" font-family="sans-serif">💡 Electric</text>
+            <rect x="105" y="72" width="45" height="12" rx="6" fill="#ff1493"/>
+            <text x="127" y="82" font-size="8" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">REPORTED</text>
+            <!-- Score badge -->
+            <rect x="55" y="105" width="70" height="20" rx="10" fill="#111"/>
+            <text x="90" y="119" font-size="10" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">+8 pts this month</text>
+          </svg>
+        </div>
+
+        <div style="text-align:center; margin-bottom:10px;">
+          <span class="info-chip" style="background:#f0faf8; color:#00796b;">✓ Zero late-payment penalties</span>
+        </div>
+        <div class="screen-title">Every Bill Paid<br/>Builds Your Credit</div>
+        <div class="screen-sub">We report your recurring bills to all 3 bureaus — helping you get credit for expenses you already pay.</div>
+
+        <div class="section-label">Connected Bills</div>
+        <div class="bills-grid">
+          <div class="bill-card">
+            <div class="bill-card-icon pink">📱</div>
+            <h4>Phone Bill</h4>
+            <p>T-Mobile · $65/mo</p>
+            <div class="status">● Reporting</div>
+          </div>
+          <div class="bill-card">
+            <div class="bill-card-icon yellow">💡</div>
+            <h4>Electric</h4>
+            <p>PG&E · $92/mo</p>
+            <div class="status">● Reporting</div>
+          </div>
+          <div class="bill-card">
+            <div class="bill-card-icon blue">💧</div>
+            <h4>Water</h4>
+            <p>City Utilities · $40/mo</p>
+            <div class="status">● Reporting</div>
+          </div>
+          <div class="bill-card" style="border: 1.5px dashed #eee; background: #fff; cursor:pointer;">
+            <div class="bill-card-icon" style="background:#f5f5f5; font-size:22px;">＋</div>
+            <h4 style="color:#aaa;">Add a bill</h4>
+            <p>Netflix, gas & more</p>
+          </div>
+        </div>
+
+        <button class="btn-full">Connect More Bills</button>
+        <div class="trust-row" style="margin-top:12px;">
+          <div class="trust-item"><span class="trust-dot">✓</span> Won't report missed payments</div>
+          <div class="trust-item"><span class="trust-dot">✓</span> Cancel anytime</div>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: Dispute Center -->
+      <div class="screen">
+        <div class="illustration-wrap">
+          <svg width="180" height="130" viewBox="0 0 180 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="180" height="130" rx="16" fill="#fff8f0"/>
+            <!-- Document base -->
+            <rect x="50" y="15" width="80" height="95" rx="8" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+            <!-- Doc lines -->
+            <rect x="62" y="30" width="56" height="5" rx="2.5" fill="#f0f0f0"/>
+            <rect x="62" y="40" width="40" height="4" rx="2" fill="#f5f5f5"/>
+            <rect x="62" y="52" width="56" height="4" rx="2" fill="#f5f5f5"/>
+            <rect x="62" y="60" width="45" height="4" rx="2" fill="#f5f5f5"/>
+            <!-- Highlighted error line -->
+            <rect x="62" y="72" width="56" height="14" rx="4" fill="#fff0f7"/>
+            <rect x="62" y="72" width="56" height="14" rx="4" stroke="#ff1493" stroke-width="1.5"/>
+            <text x="90" y="82" font-size="9" font-weight="700" fill="#ff1493" text-anchor="middle" font-family="sans-serif">! Incorrect Item</text>
+            <rect x="62" y="92" width="35" height="4" rx="2" fill="#f5f5f5"/>
+            <!-- Magnifier -->
+            <circle cx="142" cy="90" r="22" fill="#fff" stroke="#eee" stroke-width="1.5"/>
+            <circle cx="140" cy="88" r="13" fill="none" stroke="#ff1493" stroke-width="2.5"/>
+            <line x1="149" y1="97" x2="157" y2="105" stroke="#ff1493" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Check badge -->
+            <circle cx="50" cy="110" r="16" fill="#2e7d32"/>
+            <path d="M43 110 L48 115 L57 104" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div style="text-align:center; margin-bottom:10px;">
+          <span class="info-chip" style="background:#fff8f0; color:#e65100;">⚡ Avg. resolution in 14 days</span>
+        </div>
+        <div class="screen-title">Fix Errors on<br/>Your Credit Report</div>
+        <div class="screen-sub">Spotted something wrong? We'll help you dispute inaccurate items and get your report cleaned up.</div>
+
+        <div class="section-label">Active Disputes</div>
+        <div class="dispute-card">
+          <div class="dispute-icon">⚠️</div>
+          <div class="dispute-content">
+            <h4>Incorrect Late Payment</h4>
+            <p>Capital One · Reported May 2024 — you paid on time</p>
+            <div class="dispute-tag open">● Under Review</div>
+          </div>
+        </div>
+        <div class="dispute-card">
+          <div class="dispute-icon alert">📋</div>
+          <div class="dispute-content">
+            <h4>Duplicate Account</h4>
+            <p>Chase Checking · Appears twice on Experian</p>
+            <div class="dispute-tag review">● Submitted</div>
+          </div>
+        </div>
+        <div class="dispute-card">
+          <div class="dispute-icon check">✅</div>
+          <div class="dispute-content">
+            <h4>Wrong Address</h4>
+            <p>Old address removed from all 3 bureaus</p>
+            <div class="dispute-tag resolved">● Resolved</div>
+          </div>
+        </div>
+
+        <button class="btn-full" style="margin-top:4px;">Start a New Dispute</button>
+      </div>
+
+    </div><!-- /screens -->
+  </div>
+
+  <!-- Dots -->
+  <div class="dots" id="dots">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<script>
+  let current = 0;
+  const total = 4;
+  const screens = document.getElementById('screens');
+  const tabs = document.querySelectorAll('.tab');
+  const dots = document.querySelectorAll('.dot');
+  const tabsEl = document.getElementById('tabs');
+
+  function switchTab(idx) {
+    current = idx;
+    screens.style.transform = `translateX(-${idx * 100}%)`;
+    tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    // Scroll tab into view
+    tabs[idx].scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }
+
+  // Touch swipe
+  let startX = 0;
+  screens.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  screens.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0 && current < total - 1) switchTab(current + 1);
+      if (dx > 0 && current > 0) switchTab(current - 1);
+    }
+  });
+
+  // Mouse drag
+  let mouseStart = 0, isDragging = false;
+  screens.addEventListener('mousedown', e => { mouseStart = e.clientX; isDragging = true; });
+  screens.addEventListener('mouseup', e => {
+    if (!isDragging) return; isDragging = false;
+    const dx = e.clientX - mouseStart;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0 && current < total - 1) switchTab(current + 1);
+      if (dx > 0 && current > 0) switchTab(current - 1);
+    }
+  });
+  screens.addEventListener('mouseleave', () => { isDragging = false; });
+</script>
+
+</body>
+</html>
